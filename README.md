@@ -44,8 +44,8 @@ docker network create my_network
 1. **Clone o repositório**:
 
    ```bash
-   git clone https://github.com/seu_usuario/seu_repositorio.git
-   cd seu_repositorio
+   git clone https://github.com/PauloVaz-dev/n8n_evolution-api_redis_postgres/
+   cd n8n_evolution-api_redis_postgres/
    ```
 
 ## Em construção
