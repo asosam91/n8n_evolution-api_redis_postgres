@@ -1,51 +1,94 @@
-# Projeto Docker Compose: N8N, Evolution API, Redis e Postgres
+# Stack n8n + Evolution API + Redis + Postgres
 
-Este repositório fornece um arquivo **docker-compose.yml** que orquestra múltiplos serviços (N8N, Evolution API, Redis e Postgres), facilitando a configuração e execução de todo o ambiente de forma integrada.
+[![Docker Compose](https://img.shields.io/badge/docker-compose-blue?logo=docker)](https://docs.docker.com/compose/)
+[![PostgreSQL](https://img.shields.io/badge/postgres-15-blue?logo=postgresql)](https://www.postgresql.org/)
+[![Redis](https://img.shields.io/badge/redis-7.x-red?logo=redis)](https://redis.io/)
+[![n8n](https://img.shields.io/badge/n8n-automation-orange?logo=n8n)](https://n8n.io/)
 
----
-
-## Visão Geral
-
-Este projeto reúne:
-
-- **n8n**: Uma plataforma de automação e fluxo de trabalho que permite integrar diferentes serviços por meio de uma interface de arrastar e soltar.
-- **Evolution API**: Um serviço personalizado (baseado em imagem `atendai/evolution-api:homolog`) que depende do Redis e Postgres para armazenar dados e fornecer uma API.
-- **Redis**: Banco de dados em memória, utilizado para cache e armazenamento de dados de rápida consulta.
-- **Postgres**: Banco de dados relacional, usado para persistência de dados a longo prazo.
-
-O objetivo é disponibilizar todos esses serviços integrados numa mesma stack, simplificando o desenvolvimento, a homologação e o deploy.
+Este repositorio contiene un **docker-compose.yml** listo para levantar un entorno con [n8n](https://n8n.io/), **Evolution API**, Redis y PostgreSQL.  
+Es un fork de [PauloVaz-dev/n8n_evolution-api_redis_postgres](https://github.com/PauloVaz-dev/n8n_evolution-api_redis_postgres) y busca simplificar la puesta en marcha local de estos servicios.
 
 ---
+## Servicios incluidos
 
-## Estrutura do Projeto
+- **n8n** – Plataforma de automatización y orquestación de flujos.
+- **Evolution API** – Servicio para integraciones de WhatsApp que utiliza Redis y Postgres.
+- **Redis** – Motor de almacenamiento en memoria empleado para caché y mensajes.
+- **Postgres** – Base de datos relacional para datos persistentes.
 
----
-
-## Pré-requisitos
-
-- **Docker** instalado em sua máquina (versão 20+).
-- **Docker Compose** (versão 2.0 ou superior, ou Docker Desktop com suporte nativo a Compose).
-- Opcionalmente, um arquivo **.env** com as variáveis de ambiente necessárias (ex: `SUBDOMAIN`, `DOMAIN_NAME`, `GENERIC_TIMEZONE`, etc.).
+Cada servicio se declara en `docker-compose.yml` y se conecta a la red `my_network`.
 
 ---
+## Configuración
 
-## Configuração
-
-Antes de executar, verifique as variáveis de ambiente usadas pelos serviços:
-
-Rede
-
-```bash
-docker network create my_network
-```
-
-## Como Executar
-
-1. **Clone o repositório**:
+1. Copia el archivo de ejemplo y ajusta las variables necesarias. Puedes crear
+   un archivo `.env` para producción o `.env.local` para pruebas en WSL:
 
    ```bash
-   git clone https://github.com/PauloVaz-dev/n8n_evolution-api_redis_postgres/
-   cd n8n_evolution-api_redis_postgres/
+   cp .env-example .env
+   # o para un entorno local
+   cp .env-example .env.local
    ```
 
-## Em construção
+   Luego edita el archivo elegido para establecer tus credenciales y dominios.
+   Las variables principales son:
+
+   | Variable                  | Descripción                              |
+   |---------------------------|------------------------------------------|
+   | `DOMAIN_NAME`             | Dominio principal (por ej. `example.com`) |
+   | `SUBDOMAIN`               | Subdominio donde se expondrá n8n          |
+   | `GENERIC_TIMEZONE`        | Zona horaria por defecto                  |
+   | `AUTHENTICATION_API_KEY`  | Clave global para Evolution API           |
+   | `DATABASE_CONNECTION_URI` | URI de conexión para Postgres             |
+   | `N8N_HOST`                | Hostname donde se publicará n8n           |
+   | `N8N_PROTOCOL`            | `http` o `https` según el entorno        |
+   | `N8N_LISTEN_ADDRESS`      | Dirección de escucha de n8n              |
+
+   El archivo `.env-example` incluye muchas más opciones que puedes revisar para
+   personalizar Evolution API (colas, cache, webhooks, etc.). Para un entorno
+   local típico puedes usar `N8N_HOST=localhost` y `N8N_PROTOCOL=http`.
+
+2. Crea la red (si aún no existe):
+
+   ```bash
+   docker network create my_network
+   ```
+
+---
+## Uso
+
+Para levantar el entorno basta con indicar el archivo de variables que prefieras:
+
+```bash
+# Producción
+docker compose --env-file .env up -d
+
+# Entorno local (WSL)
+docker compose --env-file .env.local up -d
+```
+
+Una vez inicializado podrás acceder a:
+
+- **n8n** → `https://<SUBDOMAIN>.<DOMAIN_NAME>:5678` (o `http://localhost:5678` en modo local)
+- **Evolution API** → `http://localhost:8080`
+- **Postgres** → puerto `5432`
+- **Redis** → puerto `6379`
+
+Para detener y eliminar los contenedores ejecuta:
+
+```bash
+# Con el mismo archivo de variables usado al levantar el stack
+docker compose --env-file .env down
+```
+
+---
+## Ejemplo de flujo en n8n
+
+1. Accede a la interfaz web de n8n.
+2. Crea un nuevo workflow y añade nodos que consuman la Evolution API o cualquier otro servicio.
+3. Guarda y ejecuta tu workflow para validar que los contenedores están corriendo correctamente.
+
+---
+## Créditos
+
+Basado en el trabajo original de [PauloVaz-dev](https://github.com/PauloVaz-dev/n8n_evolution-api_redis_postgres). ¡Muchas gracias por compartir la configuración!
