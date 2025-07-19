@@ -21,13 +21,16 @@ Cada servicio se declara en `docker-compose.yml` y se conecta a la red `my_netwo
 ---
 ## Configuración
 
-1. Copia el archivo de ejemplo y ajusta las variables necesarias:
+1. Copia el archivo de ejemplo y ajusta las variables necesarias. Puedes crear
+   un archivo `.env` para producción o `.env.local` para pruebas en WSL:
 
    ```bash
    cp .env-example .env
-   # Edita .env para establecer tus credenciales y dominios
+   # o para un entorno local
+   cp .env-example .env.local
    ```
 
+   Luego edita el archivo elegido para establecer tus credenciales y dominios.
    Las variables principales son:
 
    | Variable                  | Descripción                              |
@@ -37,8 +40,13 @@ Cada servicio se declara en `docker-compose.yml` y se conecta a la red `my_netwo
    | `GENERIC_TIMEZONE`        | Zona horaria por defecto                  |
    | `AUTHENTICATION_API_KEY`  | Clave global para Evolution API           |
    | `DATABASE_CONNECTION_URI` | URI de conexión para Postgres             |
+   | `N8N_HOST`                | Hostname donde se publicará n8n           |
+   | `N8N_PROTOCOL`            | `http` o `https` según el entorno        |
+   | `N8N_LISTEN_ADDRESS`      | Dirección de escucha de n8n              |
 
-   El archivo `.env-example` incluye muchas más opciones que puedes revisar para personalizar Evolution API (colas, cache, webhooks, etc.).
+   El archivo `.env-example` incluye muchas más opciones que puedes revisar para
+   personalizar Evolution API (colas, cache, webhooks, etc.). Para un entorno
+   local típico puedes usar `N8N_HOST=localhost` y `N8N_PROTOCOL=http`.
 
 2. Crea la red (si aún no existe):
 
@@ -49,15 +57,19 @@ Cada servicio se declara en `docker-compose.yml` y se conecta a la red `my_netwo
 ---
 ## Uso
 
-Levanta el stack con:
+Para levantar el entorno basta con indicar el archivo de variables que prefieras:
 
 ```bash
-docker compose up -d
+# Producción
+docker compose --env-file .env up -d
+
+# Entorno local (WSL)
+docker compose --env-file .env.local up -d
 ```
 
 Una vez inicializado podrás acceder a:
 
-- **n8n** → `https://<SUBDOMAIN>.<DOMAIN_NAME>:5678`
+- **n8n** → `https://<SUBDOMAIN>.<DOMAIN_NAME>:5678` (o `http://localhost:5678` en modo local)
 - **Evolution API** → `http://localhost:8080`
 - **Postgres** → puerto `5432`
 - **Redis** → puerto `6379`
@@ -65,7 +77,8 @@ Una vez inicializado podrás acceder a:
 Para detener y eliminar los contenedores ejecuta:
 
 ```bash
-docker compose down
+# Con el mismo archivo de variables usado al levantar el stack
+docker compose --env-file .env down
 ```
 
 ---
